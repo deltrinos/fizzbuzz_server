@@ -1,9 +1,14 @@
-package fizzbuzz
+package domain
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/go-playground/validator/v10"
+)
+
+var (
+	ErrInvalidParams = errors.New("invalid params")
 )
 
 var validate = validator.New()
@@ -24,11 +29,11 @@ func (f *FizzBuzzParams) Validate() error {
 	}
 
 	if f.Int1 == f.Int2 {
-		return fmt.Errorf("invalid int1 is equal to int2")
+		return fmt.Errorf("%w: invalid int1 is equal to int2", ErrInvalidParams)
 	}
 
 	if f.Str1 == "" || f.Str2 == "" {
-		return fmt.Errorf("invalid input strs must be not empty")
+		return fmt.Errorf("%w: invalid input strs must be not empty", ErrInvalidParams)
 	}
 
 	// no error: params are valids

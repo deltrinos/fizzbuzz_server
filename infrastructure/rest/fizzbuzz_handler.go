@@ -1,33 +1,35 @@
-package fizzbuzz
+package rest
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
+
+	"github.com/deltrinos/fizzbuzz_server/domain"
+	"github.com/deltrinos/fizzbuzz_server/service"
 )
 
 // FizzBuzzHandler handles requests for Fizz-Buzz generation.
 type FizzBuzzHandler struct {
-	fizzBuzzService FizzBuzzService
+	fizzBuzzService service.FizzBuzzService
 }
 
 // NewFizzBuzzHandler creates a new instance of FizzBuzzHandler.
-func NewFizzBuzzHandler() *FizzBuzzHandler {
+func NewFizzBuzzHandler(fizzBuzzService service.FizzBuzzService) *FizzBuzzHandler {
 	return &FizzBuzzHandler{
-		fizzBuzzService: NewFizzBuzzService(),
+		fizzBuzzService: fizzBuzzService,
 	}
 }
 
 // HandleFizzBuzz handles requests to generate Fizz-Buzz output.
 func (h *FizzBuzzHandler) HandleFizzBuzz(w http.ResponseWriter, r *http.Request) {
-	var params FizzBuzzParams
+	var params domain.FizzBuzzParams
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	result, err := h.fizzBuzzService.GenerateFizzBuzz(params)
-	if errors.Is(err, ErrInvalidParams) {
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

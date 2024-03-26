@@ -1,14 +1,10 @@
 package main
 
 import (
-	"context"
-	"fizzbuzz_server/internal/fizzbuzz"
 	"flag"
-	"log"
-	"net/http"
 	"os"
-	"os/signal"
-	"time"
+
+	"github.com/deltrinos/fizzbuzz_server/infrastructure"
 )
 
 // Default port if not specified
@@ -35,44 +31,5 @@ func main() {
 		port = DEFAULT_PORT
 	}
 
-	// Create instances of FizzBuzzHandler and StatisticsHandler.
-	fbHandler := fizzbuzz.NewFizzBuzzHandler()
-	statsHandler := fizzbuzz.NewStatisticsHandler()
-
-	// Create a new HTTP server with a custom handler
-	server := &http.Server{
-		Addr:         ":" + port,
-		ReadTimeout:  5 * time.Second, // Maximum duration for reading the entire request
-		WriteTimeout: 5 * time.Second, // Maximum duration for writing the response
-	}
-
-	// Register the endpoints with their corresponding handlers.
-	http.HandleFunc("/fizzbuzz", fbHandler.HandleFizzBuzz)
-	http.HandleFunc("/stats", statsHandler.HandleStatistics)
-
-	// Start the server in a separate goroutine
-	go func() {
-		// Start the HTTP server and listen on the specified port.
-		log.Printf("Server is running at :%s\n", port)
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Server error: %v", err)
-		}
-	}()
-
-	// Wait for interrupt signal (e.g., Ctrl+C) to gracefully shutdown the server
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
-	<-quit
-	log.Println("Server is shutting down...")
-
-	// Create a context with a timeout for the shutdown process
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	// Shutdown the server with the given context
-	if err := server.Shutdown(ctx); err != nil {
-		log.Fatalf("Server shutdown error: %v", err)
-	}
-
-	log.Println("Server stopped gracefully")
+	infrastructure.StartServer(port)
 }

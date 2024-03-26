@@ -1,14 +1,16 @@
-package fizzbuzz
+package rest
 
 import (
 	"encoding/json"
 	"net/http"
 	"sync"
+
+	"github.com/deltrinos/fizzbuzz_server/domain"
 )
 
 var (
 	requestsCounterMu sync.Mutex
-	requestsCounter   = make(map[FizzBuzzParams]int)
+	requestsCounter   = make(map[domain.FizzBuzzParams]int)
 )
 
 // StatisticsHandler handles requests for statistics.
@@ -25,7 +27,7 @@ func (h *StatisticsHandler) HandleStatistics(w http.ResponseWriter, r *http.Requ
 	defer requestsCounterMu.Unlock()
 
 	var (
-		mostCommonRequest FizzBuzzParams
+		mostCommonRequest domain.FizzBuzzParams
 		maxHits           int
 	)
 	for req, hits := range requestsCounter {
