@@ -1,15 +1,19 @@
 package rest
 
 import (
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"github.com/deltrinos/fizzbuzz_server/domain"
+	"github.com/deltrinos/fizzbuzz_server/repository"
 	"github.com/deltrinos/fizzbuzz_server/service"
 )
 
 func TestHandleFizzBuzz(t *testing.T) {
+	statsRepo := repository.NewStatisticsRepository()
+
 	tests := []struct {
 		name         string
 		requestBody  string
@@ -33,7 +37,7 @@ func TestHandleFizzBuzz(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			handler := NewFizzBuzzHandler(service.NewFizzBuzzService())
+			handler := NewFizzBuzzHandler(service.NewFizzBuzzService(), statsRepo)
 			req := httptest.NewRequest("POST", "/fizzbuzz", strings.NewReader(tt.requestBody))
 			w := httptest.NewRecorder()
 			handler.HandleFizzBuzz(w, req)
@@ -62,9 +66,9 @@ func TestHandleStatistics(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			handler := NewStatisticsHandler()
-			requestsCounter = tt.requests
-			req := httptest.NewRequest("GET", "/stats", nil)
+			statsRepo := repository.NewStatisticsRepositoryWithRequests(tt.requests)
+			handler := NewStatisticsHandler(statsRepo)
+			req := httptest.NewRequest("GET", "/stats", http.NoBody)
 			w := httptest.NewRecorder()
 			handler.HandleStatistics(w, req)
 

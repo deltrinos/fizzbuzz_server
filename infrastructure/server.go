@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/deltrinos/fizzbuzz_server/infrastructure/rest"
+	"github.com/deltrinos/fizzbuzz_server/repository"
 	"github.com/deltrinos/fizzbuzz_server/service"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -16,10 +17,11 @@ import (
 func StartServer(port string) {
 	// Initialize dependencies
 	fizzBuzzService := service.NewFizzBuzzService()
+	statsRepo := repository.NewStatisticsRepository()
 
 	// Create HTTP handler
-	fizzBuzzHandler := rest.NewFizzBuzzHandler(fizzBuzzService)
-	statsHandler := rest.NewStatisticsHandler()
+	fizzBuzzHandler := rest.NewFizzBuzzHandler(fizzBuzzService, statsRepo)
+	statsHandler := rest.NewStatisticsHandler(statsRepo)
 
 	// Add endpoints
 	http.HandleFunc("/fizzbuzz", fizzBuzzHandler.HandleFizzBuzz)

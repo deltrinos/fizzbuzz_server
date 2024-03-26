@@ -5,18 +5,21 @@ import (
 	"net/http"
 
 	"github.com/deltrinos/fizzbuzz_server/domain"
+	"github.com/deltrinos/fizzbuzz_server/repository"
 	"github.com/deltrinos/fizzbuzz_server/service"
 )
 
 // FizzBuzzHandler handles requests for Fizz-Buzz generation.
 type FizzBuzzHandler struct {
 	fizzBuzzService service.FizzBuzzService
+	stats           *repository.StatisticsRepository
 }
 
 // NewFizzBuzzHandler creates a new instance of FizzBuzzHandler.
-func NewFizzBuzzHandler(fizzBuzzService service.FizzBuzzService) *FizzBuzzHandler {
+func NewFizzBuzzHandler(fizzBuzzService service.FizzBuzzService, stats *repository.StatisticsRepository) *FizzBuzzHandler {
 	return &FizzBuzzHandler{
 		fizzBuzzService: fizzBuzzService,
+		stats:           stats,
 	}
 }
 
@@ -35,8 +38,6 @@ func (h *FizzBuzzHandler) HandleFizzBuzz(w http.ResponseWriter, r *http.Request)
 	}
 	_ = json.NewEncoder(w).Encode(result)
 
-	// update statistics
-	requestsCounterMu.Lock()
-	requestsCounter[params]++
-	requestsCounterMu.Unlock()
+	// update statistics and update Prometheus counters
+	h.stats.LogRequest(params)
 }

@@ -39,3 +39,8 @@ func (f *FizzBuzzParams) Validate() error {
 	// no error: params are valids
 	return nil
 }
+
+// String used in statistics.
+func (f *FizzBuzzParams) String() string {
+	return fmt.Sprintf("%d-%d-%d-%s-%s", f.Int1, f.Int2, f.Limit, f.Str1, f.Str2)
+}

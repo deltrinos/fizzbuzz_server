@@ -3,39 +3,25 @@ package rest
 import (
 	"encoding/json"
 	"net/http"
-	"sync"
 
-	"github.com/deltrinos/fizzbuzz_server/domain"
-)
-
-var (
-	requestsCounterMu sync.Mutex
-	requestsCounter   = make(map[domain.FizzBuzzParams]int)
+	"github.com/deltrinos/fizzbuzz_server/repository"
 )
 
 // StatisticsHandler handles requests for statistics.
-type StatisticsHandler struct{}
+type StatisticsHandler struct {
+	stats *repository.StatisticsRepository
+}
 
 // NewStatisticsHandler creates a new instance of StatisticsHandler.
-func NewStatisticsHandler() *StatisticsHandler {
-	return &StatisticsHandler{}
+func NewStatisticsHandler(stats *repository.StatisticsRepository) *StatisticsHandler {
+	return &StatisticsHandler{
+		stats: stats,
+	}
 }
 
 // HandleStatistics handles requests to get statistics.
 func (h *StatisticsHandler) HandleStatistics(w http.ResponseWriter, r *http.Request) {
-	requestsCounterMu.Lock()
-	defer requestsCounterMu.Unlock()
-
-	var (
-		mostCommonRequest domain.FizzBuzzParams
-		maxHits           int
-	)
-	for req, hits := range requestsCounter {
-		if hits > maxHits {
-			maxHits = hits
-			mostCommonRequest = req
-		}
-	}
+	mostCommonRequest, maxHits := h.stats.GetMostFrequentRequest()
 
 	if maxHits == 0 {
 		http.Error(w, "empty", http.StatusNoContent)
